@@ -1,7 +1,7 @@
 // SCOPE: read_api
 // Please Use CloudFlare's ENV Vars, instead of hardcoding your tokens
 // Below, is for demo only
-
+// Recommended to have at least 5 tokens
 
 const GITLAB_TOKENS = ['glpat-abcdefghijklmnopq', 'glpat-abc123456789xyz'];
 
@@ -10,7 +10,6 @@ export default {
      // Allow Only WhiteListed User-Agents, This is to prevent bots from hammering the api for no reason
      const userAgent = request.headers.get('User-Agent') || '';
      if (!userAgent.toLowerCase().includes('curl') && 
-        !userAgent.toLowerCase().includes('dbin') && 
         !userAgent.toLowerCase().includes('pkgforge') && 
         !userAgent.toLowerCase().includes('soar') && 
         !userAgent.toLowerCase().includes('wget')) {
