@@ -7,7 +7,7 @@
 - #### Allowed `User-Agent`
 > - `User-Agent: *dbin*`
 > - `User-Agent: *pkgforge*`
-> - `User-Agent: *soar*`
+> - `User-Agent: *wget*`
 
 - #### Limits
 > - https://docs.gitlab.com/ee/user/gitlab_com/index.html#gitlabcom-specific-rate-limits
