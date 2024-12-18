@@ -3,31 +3,32 @@
 // Below, is for demo only
 // Recommended to have at least 5 tokens
 
-const GITHUB_TOKENS = ['ghp_abcdefghijklmnopq', 'ghp_abc123456789xyz'];
-
 export default {
-  async fetch(request) {
-     // Allow Only WhiteListed User-Agents, This is to prevent bots from hammering the api for no reason
-     const userAgent = request.headers.get('User-Agent') || '';
-     if (!userAgent.toLowerCase().includes('curl') && 
-        !userAgent.toLowerCase().includes('pkgforge') && 
-        !userAgent.toLowerCase().includes('soar') && 
+  async fetch(request, env, ctx) {
+    // Retrieve tokens from environment variables
+    const GITHUB_TOKENS = JSON.parse(env.GITHUB_TOKENS || '[]');
+
+    // Allow Only WhiteListed User-Agents, This is to prevent bots from hammering the api for no reason
+    const userAgent = request.headers.get('User-Agent') || '';
+    if (!userAgent.toLowerCase().includes('curl') &&
+        !userAgent.toLowerCase().includes('pkgforge') &&
+        !userAgent.toLowerCase().includes('soar') &&
         !userAgent.toLowerCase().includes('wget')) {
-       // Fail silently, return 420
-       return new Response(null, { status: 420 });
-     }
-    
+      // Fail silently, return 420
+      return new Response(null, { status: 420 });
+    }
+
     // Get the original request URL
     const url = new URL(request.url);
-
     // List of allowed endpoints (as patterns)
     const allowedEndpoints = [
       /^\/$/,                 // Root
       /^\/search.*/,          // /search and sub-paths
       /^\/gists.*/,           // /gists and sub-paths
+      /^\/orgs.*/,            // /gists and sub-paths
       /^\/rate_limit.*/,      // /rate_limit and sub-paths
       /^\/repos.*/,           // /repos and sub-paths
-      /^\/users.*/,           // /users
+      /^\/users.*/,           // /users*
     ];
 
     const isAllowed = allowedEndpoints.some(pattern => pattern.test(url.pathname));
@@ -37,16 +38,36 @@ export default {
     }
 
     url.hostname = 'api.github.com';
-
     let lastResponse = null;
     // Clone the tokens array to track used tokens
-    const tokens = [...GITHUB_TOKENS]; 
+    const tokens = [...GITHUB_TOKENS];
+
+    // Headers to remove (case-insensitive)
+    const headersToRemove = [
+      'CF-CONNECTING-IP',
+      'X-FORWARDED-FOR',
+      'X-REAL-IP'
+    ];
 
     while (tokens.length > 0) {
       // Randomly select and remove a token
-      const selectedToken = tokens.splice(Math.floor(Math.random() * tokens.length), 1)[0]; 
+      const selectedToken = tokens.splice(Math.floor(Math.random() * tokens.length), 1)[0];
+      
+      // Create a new Headers object and copy only the desired headers
+      const headers = new Headers();
+      
+      // Copy original headers, excluding the specified ones
+      for (const [key, value] of request.headers.entries()) {
+        const isHeaderToRemove = headersToRemove.some(
+          removeHeader => key.toLowerCase() === removeHeader.toLowerCase()
+        );
+        
+        if (!isHeaderToRemove) {
+          headers.set(key, value);
+        }
+      }
 
-      const headers = new Headers(request.headers);
+      // Set the Authorization header with the selected token
       headers.set('Authorization', `Bearer ${selectedToken}`);
 
       lastResponse = await fetch(url.toString(), {
@@ -71,5 +92,5 @@ export default {
 
     // If all tokens are exhausted and still fail, return the last response
     return lastResponse || new Response('Error: All tokens exhausted', { status: 500 });
-  },
-};
+  }
+}
