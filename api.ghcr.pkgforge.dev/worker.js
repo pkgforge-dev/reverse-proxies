@@ -58,7 +58,7 @@ export default {
             headers: tagsHeaders,
           });
           if (!tagsResponse.ok) {
-            return new Response(`Error fetching tags: ${tagsResponse.statusText}`, {
+            return new Response(`Error fetching tags: ${tagsResponse.statusText}\n`, {
               status: tagsResponse.status,
             });
           }
@@ -73,12 +73,12 @@ export default {
           if (matchingTag) {
             effectiveTag = matchingTag;
           } else {
-            return new Response("No matching tag found for the specified query.", {
+            return new Response("No matching tag found for the specified query.\n", {
               status: 404,
             });
           }
         } catch (error) {
-          return new Response(`Error fetching tags: ${error.message}`, {
+          return new Response(`Error fetching tags: ${error.message}\n`, {
             status: 500,
           });
         }
@@ -103,7 +103,7 @@ export default {
             headers: tagsHeaders,
           });
           if (!tagsResponse.ok) {
-            return new Response(`Error fetching tags: ${tagsResponse.statusText}`, {
+            return new Response(`Error fetching tags: ${tagsResponse.statusText}\n`, {
               status: tagsResponse.status,
             });
           }
@@ -112,14 +112,14 @@ export default {
           const tagsList = tagsData.tags || [];
 
           if (tagsList.length > 0) {
-            effectiveTag = tagsList[0]; // Use the first available tag
+            effectiveTag = tagsList[tagsList.length - 1]; // Use the last available tag
           } else {
-            return new Response("No tags available to use as a fallback.", {
+            return new Response("No tags available to use as a fallback.\n", {
               status: 404,
             });
           }
         } catch (error) {
-          return new Response(`Error fetching tags: ${error.message}`, {
+          return new Response(`Error fetching tags: ${error.message}\n`, {
             status: 500,
           });
         }
@@ -127,7 +127,7 @@ export default {
 
       // If no tag is still found (shouldn't happen), return an error
       if (!effectiveTag) {
-        return new Response("Missing required parameter: tag", {
+        return new Response("Missing required parameter: tag\n", {
           status: 400,
         });
       }
@@ -154,7 +154,7 @@ export default {
           headers: manifestHeaders,
         });
         if (!manifestResponse.ok) {
-          return new Response(`Error fetching manifest: ${manifestResponse.statusText}`, {
+          return new Response(`Error fetching manifest: ${manifestResponse.statusText}\n`, {
             status: manifestResponse.status,
           });
         }
@@ -165,7 +165,7 @@ export default {
         );
 
         if (!fileLayer) {
-          return new Response(`File ${download} not found in manifest`, {
+          return new Response(`File ${download} not found in manifest\n`, {
             status: 404,
           });
         }
@@ -186,14 +186,14 @@ export default {
           headers: blobHeaders,
         });
         if (!blobResponse.ok) {
-          return new Response(`Error fetching blob: ${blobResponse.statusText}`, {
+          return new Response(`Error fetching blob: ${blobResponse.statusText}\n`, {
             status: blobResponse.status,
           });
         }
 
         return blobResponse;
       } catch (error) {
-        return new Response(`Error: ${error.message}`, {
+        return new Response(`Error: ${error.message}\n`, {
           status: 500,
         });
       }
@@ -203,7 +203,7 @@ export default {
     if (url.pathname.includes('/manifest') || manifest === "true" || manifest === '') {
       // Require tag query parameter
       if (!tag) {
-        return new Response("Missing required parameter: tag", {
+        return new Response("Missing required parameter: tag\n", {
           status: 400,
         });
       }
@@ -236,13 +236,13 @@ export default {
         }
         // Return the manifest response
         const manifestData = await response.text();
-        return new Response(manifestData, {
+        return new Response(manifestData + '\n', {
           headers: {
             "Content-Type": "application/json"
           },
         });
       } catch (error) {
-        return new Response(`Error: ${error.message}`, {
+        return new Response(`Error: ${error.message}\n`, {
           status: 500
         });
       }
@@ -268,7 +268,7 @@ export default {
           headers
         });
         if (!response.ok) {
-          return new Response(`Error fetching tags: ${response.statusText}`, {
+          return new Response(`Error fetching tags: ${response.statusText}\n`, {
             status: response.status,
           });
         }
@@ -280,13 +280,13 @@ export default {
         if (tags === null && !query) {
           // Return the first tag if ?tag is provided without a value
           if (tagsList.length > 0) {
-            return new Response(tagsList[0], {
+            return new Response(tagsList[tagsList.length - 1] + '\n', {
               headers: {
                 "Content-Type": "text/plain"
               },
             });
           } else {
-            return new Response("No tags found.", {
+            return new Response("No tags found.\n", {
               status: 404
             });
           }
@@ -299,13 +299,13 @@ export default {
             tag.toLowerCase().includes(queryLower)
           );
           if (matchingTag) {
-            return new Response(matchingTag, {
+            return new Response(matchingTag + '\n', {
               headers: {
                 "Content-Type": "text/plain"
               },
             });
           } else {
-            return new Response("No matching tag found for the specified Query.", {
+            return new Response("No matching tag found for the specified Query.\n", {
               status: 404,
             });
           }
@@ -314,7 +314,7 @@ export default {
         if (tags === "all" || tags === "true" || tags === '') {
           // Return all tags as a newline-separated string
           const tagsString = tagsList.join("\n");
-          return new Response(tagsString, {
+          return new Response(tagsString + '\n', {
             headers: {
               "Content-Type": "text/plain"
             },
@@ -322,19 +322,19 @@ export default {
         }
 
         // Fallback for invalid tags query
-        return new Response("Invalid tags parameter value.", {
+        return new Response("Invalid tags parameter value.\n", {
           status: 400,
         });
 
       } catch (error) {
-        return new Response(`Error: ${error.message}`, {
+        return new Response(`Error: ${error.message}\n`, {
           status: 500
         });
       }
     }
 
     // Default behavior for other requests
-    return new Response("Not a valid request", {
+    return new Response("Not a valid request!\n", {
       status: 400
     });
   },
