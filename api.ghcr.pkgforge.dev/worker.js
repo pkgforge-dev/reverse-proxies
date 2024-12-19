@@ -2,18 +2,28 @@ export default {
   async fetch(request) {
 
     // Allow Only WhiteListed User-Agents
-    const userAgent = request.headers.get('User-Agent') || '';
-    if (!userAgent.toLowerCase().includes('curl') &&
-      !userAgent.toLowerCase().includes('dbin') &&
-      !userAgent.toLowerCase().includes('pkgforge') &&
-      !userAgent.toLowerCase().includes('soar') &&
-      !userAgent.toLowerCase().includes('wget')) {
+    //const userAgent = request.headers.get('User-Agent') || '';
+    //if (!userAgent.toLowerCase().includes('curl') &&
+    //  !userAgent.toLowerCase().includes('dbin') &&
+    //  !userAgent.toLowerCase().includes('pkgforge') &&
+    //  !userAgent.toLowerCase().includes('soar') &&
+    //  !userAgent.toLowerCase().includes('wget')) {
+    //  // Fail silently, return 420
+    //  return new Response(null, {
+    //    status: 420
+    //  });
+    //}
+
+    // Get the original request URL
+    const url = new URL(request.url);
+    if (!url.toString().toLowerCase().includes('github') &&
+       !url.toString().toLowerCase().includes('homebrew') &&
+       !url.toString().toLowerCase().includes('pkgforge')) {
       // Fail silently, return 420
       return new Response(null, {
         status: 420
       });
     }
-
     // Headers to remove (case-insensitive)
     const headersToRemove = [
       'CF-CONNECTING-IP',
@@ -21,8 +31,6 @@ export default {
       'X-REAL-IP'
     ];
 
-    // Get the original request URL
-    const url = new URL(request.url);
     // Extract parameters from the URL
     const searchParams = new URLSearchParams(url.search.slice(1));
     const download = searchParams.get("download");
@@ -191,6 +199,27 @@ export default {
           });
         }
 
+        if (download) {
+          const lowerDownload = download.toLowerCase();
+          const contentType = lowerDownload.endsWith('.json')
+            ? 'application/json; charset=utf-8'
+            : lowerDownload.endsWith('.log')
+            ? 'text/plain; charset=utf-8'
+            : lowerDownload.endsWith('.png')
+            ? 'image/png'
+            : lowerDownload.endsWith('.svg')
+            ? 'image/svg+xml'
+            : lowerDownload.endsWith('.xml')
+            ? 'application/xml; charset=utf-8'
+            : null;
+        
+          return new Response(await blobResponse.blob(), {
+            headers: {
+              'Content-Type': contentType || 'application/octet-stream'
+            }
+          });
+        }
+
         return blobResponse;
       } catch (error) {
         return new Response(`Error: ${error.message}\n`, {
@@ -334,8 +363,9 @@ export default {
     }
 
     // Default behavior for other requests
-    return new Response("Not a valid request!\n", {
-      status: 400
+    //return new Response("Not a valid request!\n", {
+    return new Response(null, {
+      status: 420
     });
   },
 };
