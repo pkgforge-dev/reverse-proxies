@@ -1,9 +1,3 @@
-- #### Allowed `User-Agent`
-> - `User-Agent: *curl*`
-> - `User-Agent: *dbin*`
-> - `User-Agent: *pkgforge*`
-> - `User-Agent: *wget*`
-
 - #### Endpoints
 > - Get All Tags
 > ```bash
