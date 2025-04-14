@@ -1,5 +1,7 @@
 - #### Simple Transparent (mostly) HTTP<-->HTTPS Proxy
 > - Request any HTTPS URL using workers from a Dumb HTTP only Client
+> - Read the help page (No Browser, use curl/wget): http://http.pkgforge.dev/help
+> 
 > ```bash
 > #Use bash builtin to download arbitrary files
 > function raw_http_get()
