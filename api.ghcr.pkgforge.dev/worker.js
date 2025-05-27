@@ -199,6 +199,9 @@ export default {
           });
         }
 
+        // Stream the response directly instead of buffering
+        const responseHeaders = new Headers();
+        
         if (download) {
           const lowerDownload = download.toLowerCase();
           const contentType = lowerDownload.endsWith('.json')
@@ -211,16 +214,25 @@ export default {
             ? 'image/svg+xml'
             : lowerDownload.endsWith('.xml')
             ? 'application/xml; charset=utf-8'
-            : null;
-        
-          return new Response(await blobResponse.blob(), {
-            headers: {
-              'Content-Type': contentType || 'application/octet-stream'
-            }
-          });
+            : 'application/octet-stream';
+          
+          responseHeaders.set('Content-Type', contentType);
         }
 
-        return blobResponse;
+        // Copy relevant headers from the blob response
+        if (blobResponse.headers.has('content-length')) {
+          responseHeaders.set('Content-Length', blobResponse.headers.get('content-length'));
+        }
+        if (blobResponse.headers.has('content-encoding')) {
+          responseHeaders.set('Content-Encoding', blobResponse.headers.get('content-encoding'));
+        }
+
+        // Return the response body as a stream
+        return new Response(blobResponse.body, {
+          status: blobResponse.status,
+          headers: responseHeaders
+        });
+
       } catch (error) {
         return new Response(`Error: ${error.message}\n`, {
           status: 500,
